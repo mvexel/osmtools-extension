@@ -10,6 +10,8 @@ See my [profile](https://sr.ht/~mvexel/) for links to discussions and tickets.
 
 This Chrome / Firefox extension give you easy access to OSM tools based on the OSM map extent currently shown in in your active web browser tab. For example, if you are currently looking at [the OSM map around Manila](https://www.openstreetmap.org/#map=12/14.6208/121.0470), you can click on the extension icon and click on `New uMap here` to create a new custom map for this exact map extent using the uMap application.
 
+**New in v1.1.0:** You can now control how tool links open - choose between opening in new tabs (default, better for tiling window managers), same tab (minimal screen space usage), or new windows (original behavior). Access this setting via the settings page.
+
 ![extension screenshot](https://images.rtijn.org/2025/chrome-extension-menu.png)
 
 *There are other browser extensions out there that have more functionality, notably [OpenSwitchMaps](https://github.com/tankaru/OpenSwitchMaps). I made this to be simple and single-purpose, with source code that is easy to inspect.*
@@ -34,6 +36,11 @@ If there is a tool you would like to add to the default list, open [`defaults.js
 Please submit a pull request with your modified code and share your improvements with the community!
 
 If that sounds too difficult, you can also open an issue and tell me what tool you would like to see included in the default list.
+
+## Documentation
+
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Guide for local development and testing in Firefox and Chrome
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
 
 ## Notes
 

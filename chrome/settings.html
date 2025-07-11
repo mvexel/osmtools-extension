@@ -101,8 +101,27 @@
 
 <body>
     <h1>OSM Tools Settings</h1>
-    <p>Drag to reorder tools. Uncheck to disable.</p>
-    <div id="tools-list"></div>
+    
+    <div class="tool-section">
+        <h2>General Settings</h2>
+        <div style="margin-bottom: 20px;">
+            <label for="link-behavior" style="display: block; margin-bottom: 5px; font-weight: bold;">Link Opening Behavior:</label>
+            <select id="link-behavior" style="width: 100%; padding: 8px; margin: 4px 0; box-sizing: border-box;">
+                <option value="new-tab">Open in new tab</option>
+                <option value="same-tab">Open in same tab</option>
+                <option value="new-window">Open in new window</option>
+            </select>
+            <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                Controls how tool links open when clicked from the popup.
+            </p>
+        </div>
+    </div>
+    
+    <div class="tool-section">
+        <h2>Tools Configuration</h2>
+        <p>Drag to reorder tools. Uncheck to disable.</p>
+        <div id="tools-list"></div>
+    </div>
 
     <div class="add-tool">
         <h2>Add New Tool</h2>

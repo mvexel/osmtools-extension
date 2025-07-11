@@ -2,268 +2,308 @@
 
 // Load settings from storage
 function loadSettings() {
-    chrome.storage.sync.get(['tools', 'order'], (result) => {
-        const tools = result.tools || defaultTools;
-        const order = result.order || Object.keys(tools);
-        renderTools(tools, order);
-    });
+  chrome.storage.sync.get(["tools", "order", "globalSettings"], (result) => {
+    const tools = result.tools || defaultTools;
+    const order = result.order || Object.keys(tools);
+    const globalSettings = result.globalSettings || defaultGlobalSettings;
+    renderTools(tools, order);
+    renderGlobalSettings(globalSettings);
+  });
+}
+
+// Render global settings
+function renderGlobalSettings(globalSettings) {
+  const linkBehaviorSelect = document.getElementById("link-behavior");
+  if (linkBehaviorSelect) {
+    linkBehaviorSelect.value = globalSettings.linkOpenBehavior || "new-tab";
+  }
 }
 
 // Render tools list
 function renderTools(tools, order) {
-    const list = document.getElementById('tools-list');
-    list.innerHTML = '';
+  const list = document.getElementById("tools-list");
+  list.innerHTML = "";
 
-    // Create section headers
-    const coordinateHeader = document.createElement('h3');
-    coordinateHeader.textContent = 'Coordinate-based Tools';
-    list.appendChild(coordinateHeader);
+  // Create section headers
+  const coordinateHeader = document.createElement("h3");
+  coordinateHeader.textContent = "Coordinate-based Tools";
+  list.appendChild(coordinateHeader);
 
-    const coordinateList = document.createElement('div');
-    coordinateList.className = 'tool-section';
-    list.appendChild(coordinateList);
+  const coordinateList = document.createElement("div");
+  coordinateList.className = "tool-section";
+  list.appendChild(coordinateList);
 
-    const changesetHeader = document.createElement('h3');
-    changesetHeader.textContent = 'Changeset Tools';
-    list.appendChild(changesetHeader);
+  const changesetHeader = document.createElement("h3");
+  changesetHeader.textContent = "Changeset Tools";
+  list.appendChild(changesetHeader);
 
-    const changesetList = document.createElement('div');
-    changesetList.className = 'tool-section';
-    list.appendChild(changesetList);
+  const changesetList = document.createElement("div");
+  changesetList.className = "tool-section";
+  list.appendChild(changesetList);
 
-    order.forEach(name => {
-        const toolDiv = document.createElement('div');
-        toolDiv.className = 'tool-item';
-        toolDiv.draggable = true;
+  order.forEach((name) => {
+    const toolDiv = document.createElement("div");
+    toolDiv.className = "tool-item";
+    toolDiv.draggable = true;
 
-        // Handle both old and new format
-        const tool = tools[name];
-        const isEnabled = tool ? 
-            (typeof tool === 'object' ? tool.enabled !== false : true) : 
-            false;
-        
-        const toolType = tool && typeof tool === 'object' && tool.type ? tool.type : 'coordinate';
+    // Handle both old and new format
+    const tool = tools[name];
+    const isEnabled = tool
+      ? typeof tool === "object"
+        ? tool.enabled !== false
+        : true
+      : false;
 
-        const label = document.createElement('label');
-        const input = document.createElement('input');
-        input.type = 'checkbox';
-        if (isEnabled) {
-            input.checked = true;
-        }
-        label.appendChild(input);
-        label.appendChild(document.createTextNode(name));
-        
-        const typeSpan = document.createElement('span');
-        typeSpan.className = 'tool-type';
-        typeSpan.textContent = toolType;
-        
-        toolDiv.appendChild(label);
-        toolDiv.appendChild(typeSpan);
+    const toolType =
+      tool && typeof tool === "object" && tool.type ? tool.type : "coordinate";
 
-        // Add event listeners
-        setupToolItemEvents(toolDiv, name, tools, order);
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    if (isEnabled) {
+      input.checked = true;
+    }
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(name));
 
-        // Add to the appropriate section
-        if (toolType === 'changeset') {
-            changesetList.appendChild(toolDiv);
-        } else {
-            coordinateList.appendChild(toolDiv);
-        }
-    });
+    const typeSpan = document.createElement("span");
+    typeSpan.className = "tool-type";
+    typeSpan.textContent = toolType;
+
+    toolDiv.appendChild(label);
+    toolDiv.appendChild(typeSpan);
+
+    // Add event listeners
+    setupToolItemEvents(toolDiv, name, tools, order);
+
+    // Add to the appropriate section
+    if (toolType === "changeset") {
+      changesetList.appendChild(toolDiv);
+    } else {
+      coordinateList.appendChild(toolDiv);
+    }
+  });
 }
 
 // Setup event listeners for tool items
 function setupToolItemEvents(toolDiv, name, tools, order) {
-    // Checkbox change event
-    toolDiv.querySelector('input').addEventListener('change', (e) => {
-        updateToolEnabledState(name, e.target.checked, tools);
-        saveSettings(false);
-        showSavedFeedback();
-    });
+  // Checkbox change event
+  toolDiv.querySelector("input").addEventListener("change", (e) => {
+    updateToolEnabledState(name, e.target.checked, tools);
+    saveSettings(false);
+    showSavedFeedback();
+  });
 
-    // Drag and drop events
-    toolDiv.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', name);
-    });
+  // Drag and drop events
+  toolDiv.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/plain", name);
+  });
 
-    toolDiv.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        const rect = toolDiv.getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
-        toolDiv.style.borderTop = e.clientY < midY ? '2px solid #1a73e8' : '';
-        toolDiv.style.borderBottom = e.clientY >= midY ? '2px solid #1a73e8' : '';
-    });
+  toolDiv.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const rect = toolDiv.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    toolDiv.style.borderTop = e.clientY < midY ? "2px solid #1a73e8" : "";
+    toolDiv.style.borderBottom = e.clientY >= midY ? "2px solid #1a73e8" : "";
+  });
 
-    toolDiv.addEventListener('dragleave', () => {
-        toolDiv.style.borderTop = '';
-        toolDiv.style.borderBottom = '';
-    });
+  toolDiv.addEventListener("dragleave", () => {
+    toolDiv.style.borderTop = "";
+    toolDiv.style.borderBottom = "";
+  });
 
-    toolDiv.addEventListener('drop', (e) => {
-        e.preventDefault();
-        toolDiv.style.borderTop = '';
-        toolDiv.style.borderBottom = '';
+  toolDiv.addEventListener("drop", (e) => {
+    e.preventDefault();
+    toolDiv.style.borderTop = "";
+    toolDiv.style.borderBottom = "";
 
-        const draggedName = e.dataTransfer.getData('text/plain');
-        const draggedIndex = order.indexOf(draggedName);
-        const targetIndex = order.indexOf(name);
+    const draggedName = e.dataTransfer.getData("text/plain");
+    const draggedIndex = order.indexOf(draggedName);
+    const targetIndex = order.indexOf(name);
 
-        if (draggedIndex !== -1 && targetIndex !== -1) {
-            order.splice(draggedIndex, 1);
-            order.splice(targetIndex, 0, draggedName);
-            renderTools(tools, order);
-            saveSettings(false);
-            showSavedFeedback();
-        }
-    });
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      order.splice(draggedIndex, 1);
+      order.splice(targetIndex, 0, draggedName);
+      renderTools(tools, order);
+      saveSettings(false);
+      showSavedFeedback();
+    }
+  });
 }
 
 // Update tool enabled state
 function updateToolEnabledState(name, isEnabled, tools) {
-    if (!tools[name]) {
-        // If tool doesn't exist, create it
-        tools[name] = {
-            url: defaultTools[name] ? defaultTools[name].url : '',
-            enabled: isEnabled
-        };
-    } else if (typeof tools[name] === 'string') {
-        // Convert old format to new format
-        const url = tools[name];
-        tools[name] = {
-            url: url,
-            enabled: isEnabled
-        };
-    } else {
-        // Update existing tool
-        tools[name].enabled = isEnabled;
-    }
+  if (!tools[name]) {
+    // If tool doesn't exist, create it
+    tools[name] = {
+      url: defaultTools[name] ? defaultTools[name].url : "",
+      enabled: isEnabled,
+    };
+  } else if (typeof tools[name] === "string") {
+    // Convert old format to new format
+    const url = tools[name];
+    tools[name] = {
+      url: url,
+      enabled: isEnabled,
+    };
+  } else {
+    // Update existing tool
+    tools[name].enabled = isEnabled;
+  }
 }
 
 // Function to show saved feedback
 function showSavedFeedback() {
-    const feedback = document.createElement('div');
-    feedback.textContent = 'Settings saved!';
-    feedback.style.position = 'fixed';
-    feedback.style.bottom = '20px';
-    feedback.style.right = '20px';
-    feedback.style.backgroundColor = '#4CAF50';
-    feedback.style.color = 'white';
-    feedback.style.padding = '10px';
-    feedback.style.borderRadius = '4px';
-    feedback.style.opacity = '0';
-    feedback.style.transition = 'opacity 0.3s';
+  const feedback = document.createElement("div");
+  feedback.textContent = "Settings saved!";
+  feedback.style.position = "fixed";
+  feedback.style.bottom = "20px";
+  feedback.style.right = "20px";
+  feedback.style.backgroundColor = "#4CAF50";
+  feedback.style.color = "white";
+  feedback.style.padding = "10px";
+  feedback.style.borderRadius = "4px";
+  feedback.style.opacity = "0";
+  feedback.style.transition = "opacity 0.3s";
 
-    document.body.appendChild(feedback);
+  document.body.appendChild(feedback);
 
-    // Animation sequence
+  // Animation sequence
+  setTimeout(() => {
+    feedback.style.opacity = "1";
     setTimeout(() => {
-        feedback.style.opacity = '1';
-        setTimeout(() => {
-            feedback.style.opacity = '0';
-            setTimeout(() => {
-                document.body.removeChild(feedback);
-            }, 300);
-        }, 2000);
-    }, 10);
+      feedback.style.opacity = "0";
+      setTimeout(() => {
+        document.body.removeChild(feedback);
+      }, 300);
+    }, 2000);
+  }, 10);
 }
 
 // Save settings function
 function saveSettings(showAlert = true) {
-    chrome.storage.sync.get(['tools', 'order'], (result) => {
-        let tools = result.tools || defaultTools;
-        // Get the current order from the DOM
-        const order = Array.from(document.querySelectorAll('.tool-item'))
-            .map(item => {
-                const name = item.querySelector('label').textContent.trim();
-                const isChecked = item.querySelector('input[type="checkbox"]').checked;
+  chrome.storage.sync.get(["tools", "order", "globalSettings"], (result) => {
+    let tools = result.tools || defaultTools;
+    let globalSettings = result.globalSettings || defaultGlobalSettings;
 
-                // Update the enabled state in the tools object
-                updateToolEnabledState(name, isChecked, tools);
+    // Get the current order from the DOM
+    const order = Array.from(document.querySelectorAll(".tool-item")).map(
+      (item) => {
+        const name = item.querySelector("label").textContent.trim();
+        const isChecked = item.querySelector('input[type="checkbox"]').checked;
 
-                return name;
-            });
+        // Update the enabled state in the tools object
+        updateToolEnabledState(name, isChecked, tools);
 
-        // Save both the order and the updated tools with enabled states
-        chrome.storage.sync.set({ tools, order }, () => {
-            if (showAlert) {
-                showSavedFeedback();
-            }
-        });
+        return name;
+      },
+    );
+
+    // Update global settings from the UI
+    const linkBehaviorSelect = document.getElementById("link-behavior");
+    if (linkBehaviorSelect) {
+      globalSettings.linkOpenBehavior = linkBehaviorSelect.value;
+    }
+
+    // Save both the order and the updated tools with enabled states
+    chrome.storage.sync.set({ tools, order, globalSettings }, () => {
+      if (showAlert) {
+        showSavedFeedback();
+      }
     });
+  });
 }
 
 // Add new tool
 function addNewTool() {
-    const name = document.getElementById('tool-name').value.trim();
-    const url = document.getElementById('tool-url').value.trim();
-    const toolType = document.getElementById('tool-type').value;
+  const name = document.getElementById("tool-name").value.trim();
+  const url = document.getElementById("tool-url").value.trim();
+  const toolType = document.getElementById("tool-type").value;
 
-    let isValid = false;
-    
-    if (toolType === 'coordinate') {
-        isValid = name && url && url.includes('{zoom}') && url.includes('{lat}') && url.includes('{lon}');
-    } else if (toolType === 'changeset') {
-        isValid = name && url && url.includes('{changesetId}');
-    }
+  let isValid = false;
 
-    if (isValid) {
-        chrome.storage.sync.get(['tools', 'order'], (result) => {
-            const tools = result.tools || defaultTools;
-            const order = result.order || Object.keys(tools);
+  if (toolType === "coordinate") {
+    isValid =
+      name &&
+      url &&
+      url.includes("{zoom}") &&
+      url.includes("{lat}") &&
+      url.includes("{lon}");
+  } else if (toolType === "changeset") {
+    isValid = name && url && url.includes("{changesetId}");
+  }
 
-            tools[name] = {
-                url: url,
-                enabled: true,
-                type: toolType
-            };
+  if (isValid) {
+    chrome.storage.sync.get(["tools", "order", "globalSettings"], (result) => {
+      const tools = result.tools || defaultTools;
+      const order = result.order || Object.keys(tools);
+      const globalSettings = result.globalSettings || defaultGlobalSettings;
 
-            if (!order.includes(name)) {
-                order.push(name);
-            }
+      tools[name] = {
+        url: url,
+        enabled: true,
+        type: toolType,
+      };
 
-            chrome.storage.sync.set({ tools, order }, () => {
-                loadSettings();
-                document.getElementById('tool-name').value = '';
-                document.getElementById('tool-url').value = '';
-                showSavedFeedback();
-            });
-        });
+      if (!order.includes(name)) {
+        order.push(name);
+      }
+
+      chrome.storage.sync.set({ tools, order, globalSettings }, () => {
+        loadSettings();
+        document.getElementById("tool-name").value = "";
+        document.getElementById("tool-url").value = "";
+        showSavedFeedback();
+      });
+    });
+  } else {
+    if (toolType === "coordinate") {
+      alert(
+        "Please enter a valid tool name and URL with {zoom}, {lat}, and {lon} placeholders",
+      );
     } else {
-        if (toolType === 'coordinate') {
-            alert('Please enter a valid tool name and URL with {zoom}, {lat}, and {lon} placeholders');
-        } else {
-            alert('Please enter a valid tool name and URL with {changesetId} placeholder');
-        }
+      alert(
+        "Please enter a valid tool name and URL with {changesetId} placeholder",
+      );
     }
+  }
 }
 
 // Initialize event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // Add tool button
-    document.getElementById('add-tool-btn').addEventListener('click', addNewTool);
+document.addEventListener("DOMContentLoaded", () => {
+  // Add tool button
+  document.getElementById("add-tool-btn").addEventListener("click", addNewTool);
 
-    // Save button
-    document.getElementById('save-btn').addEventListener('click', () => {
-        saveSettings(true);
-    });
+  // Save button
+  document.getElementById("save-btn").addEventListener("click", () => {
+    saveSettings(true);
+  });
 
-    // Toggle placeholder based on tool type selection
-    const toolTypeSelect = document.getElementById('tool-type');
-    const coordinatePlaceholder = document.getElementById('coordinate-placeholder');
-    const changesetPlaceholder = document.getElementById('changeset-placeholder');
-    
-    toolTypeSelect.addEventListener('change', () => {
-        if (toolTypeSelect.value === 'coordinate') {
-            coordinatePlaceholder.style.display = 'block';
-            changesetPlaceholder.style.display = 'none';
-        } else {
-            coordinatePlaceholder.style.display = 'none';
-            changesetPlaceholder.style.display = 'block';
-        }
-    });
+  // Toggle placeholder based on tool type selection
+  const toolTypeSelect = document.getElementById("tool-type");
+  const coordinatePlaceholder = document.getElementById(
+    "coordinate-placeholder",
+  );
+  const changesetPlaceholder = document.getElementById("changeset-placeholder");
 
-    // Initialize
-    loadSettings();
+  toolTypeSelect.addEventListener("change", () => {
+    if (toolTypeSelect.value === "coordinate") {
+      coordinatePlaceholder.style.display = "block";
+      changesetPlaceholder.style.display = "none";
+    } else {
+      coordinatePlaceholder.style.display = "none";
+      changesetPlaceholder.style.display = "block";
+    }
+  });
+
+  // Link behavior change listener
+  document.getElementById("link-behavior").addEventListener("change", () => {
+    saveSettings(false);
+    showSavedFeedback();
+  });
+
+  // Initialize
+  loadSettings();
 });
 
-window.name = 'osm_tools_settings';
+window.name = "osm_tools_settings";
