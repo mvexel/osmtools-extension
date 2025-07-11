@@ -42,7 +42,7 @@ Any updates to this privacy policy will be reflected in the "Last updated" date 
 
 ## Contact
 
-If you have any questions or concerns about this privacy policy, please open an issue on the GitHub repository or contact the developer directly.
+If you have any questions or concerns about this privacy policy, please open an issue on the Codeberg repository or contact the developer directly.
 
 ---
 

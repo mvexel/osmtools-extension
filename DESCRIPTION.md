@@ -38,7 +38,7 @@ This extension respects your privacy:
 
 ### Open Source
 
-OSM Tools Quick Access is fully open source. Contributions, bug reports, and feature requests are welcome on GitHub.
+OSM Tools Quick Access is fully open source. Contributions, bug reports, and feature requests are welcome on Codeberg.
 
 ---
 
